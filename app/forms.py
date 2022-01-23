@@ -7,8 +7,9 @@ from wtforms import (
     BooleanField,
     SubmitField
 )
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError
 from wtforms.widgets import DateInput, TimeInput
+from datetime import datetime
 
 
 class AppointmentForm(FlaskForm):
@@ -20,3 +21,13 @@ class AppointmentForm(FlaskForm):
     description = TextAreaField('Description', [DataRequired()])
     private = BooleanField('Private?')
     submit = SubmitField('Create an appointment')
+
+    def validate_end_date(form, field):
+        start = datetime.combine(form.start_date.data, form.start_time.data)
+        end = datetime.combine(field.data, form.end_time.data)
+        if form.start_date.data != field.data:
+            msg = 'End date and start date must be the same'
+            raise ValidationError(msg)
+        elif start >= end:
+            msg = 'End date/time must come after start date/time'
+            raise ValidationError(msg)
